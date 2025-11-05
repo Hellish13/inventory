@@ -280,7 +280,7 @@ impl<'a> WriteOffRequestRepository<'a> {
         let manager = manager_repo.get_by_id(request.manager_id)?
             .ok_or_else(|| anyhow!("Manager not found"))?;
 
-        // Получаем администратора (если есть)
+        // Получаем администратора
         let admin = if let Some(admin_id) = request.admin_id {
             let admin_repo = AdminRepository::new(self.db);
             admin_repo.get_by_id(admin_id).ok().flatten()
@@ -413,7 +413,6 @@ impl<'a> AdminRepository<'a> {
     pub fn get_all(&self) -> Result<Vec<Admin>> {
         let _conn = self.db.get_connection();
         // Реализация получения всех администраторов
-        // Пока возвращаем пустой вектор для демонстрации
         Ok(Vec::new())
     }
 }

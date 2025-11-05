@@ -7,11 +7,120 @@ use crate::models::*;
 use crate::database::Database;
 use crate::repositories::*;
 
+fn interactive_data_entry(db: &Database) -> Result<()> {
+    use std::io::{self, Write};
+    
+    println!("\n=== ИНТЕРАКТИВНОЕ ДОБАВЛЕНИЕ ДАННЫХ ===");
+    
+    let manager_repo = ManagerRepository::new(db);
+    let product_repo = ProductRepository::new(db);
+    
+    // Добавление менеджера
+    println!("\n--- Добавление менеджера ---");
+    
+    print!("Введите ФИО менеджера: ");
+    io::stdout().flush()?;
+    let mut name = String::new();
+    io::stdin().read_line(&mut name)?;
+    let name = name.trim().to_string();
+    
+    print!("Введите email менеджера: ");
+    io::stdout().flush()?;
+    let mut email = String::new();
+    io::stdin().read_line(&mut email)?;
+    let email = email.trim().to_string();
+    
+    print!("Введите телефон менеджера (необязательно): ");
+    io::stdout().flush()?;
+    let mut phone = String::new();
+    io::stdin().read_line(&mut phone)?;
+    let phone = if phone.trim().is_empty() {
+        None
+    } else {
+        Some(phone.trim().to_string())
+    };
+    
+    let manager = Manager {
+        id: None,
+        name,
+        email,
+        phone,
+        is_active: true,
+    };
+    
+    let manager_id = manager_repo.create(&manager)?;
+    println!("✅ Менеджер добавлен с ID: {}", manager_id);
+    
+    // Добавление товара
+    println!("\n--- Добавление товара ---");
+    
+    print!("Введите название товара: ");
+    io::stdout().flush()?;
+    let mut product_name = String::new();
+    io::stdin().read_line(&mut product_name)?;
+    let product_name = product_name.trim().to_string();
+    
+    print!("Введите описание товара: ");
+    io::stdout().flush()?;
+    let mut description = String::new();
+    io::stdin().read_line(&mut description)?;
+    let description = if description.trim().is_empty() {
+        None
+    } else {
+        Some(description.trim().to_string())
+    };
+    
+    print!("Введите категорию товара: ");
+    io::stdout().flush()?;
+    let mut category = String::new();
+    io::stdin().read_line(&mut category)?;
+    let category = if category.trim().is_empty() {
+        None
+    } else {
+        Some(category.trim().to_string())
+    };
+    
+    print!("Введите цену товара: ");
+    io::stdout().flush()?;
+    let mut price_str = String::new();
+    io::stdin().read_line(&mut price_str)?;
+    let price: f64 = price_str.trim().parse()?;
+    
+    print!("Введите количество товара: ");
+    io::stdout().flush()?;
+    let mut quantity_str = String::new();
+    io::stdin().read_line(&mut quantity_str)?;
+    let quantity: i32 = quantity_str.trim().parse()?;
+    
+    print!("Введите SKU товара: ");
+    io::stdout().flush()?;
+    let mut sku = String::new();
+    io::stdin().read_line(&mut sku)?;
+    let sku = sku.trim().to_string();
+    
+    let product = Product {
+        id: None,
+        name: product_name,
+        description,
+        category,
+        price,
+        quantity,
+        sku,
+    };
+    
+    let product_id = product_repo.create(&product)?;
+    println!("✅ Товар добавлен с ID: {}", product_id);
+    
+    println!("\n=== ДАННЫЕ УСПЕШНО ДОБАВЛЕНЫ! ===");
+    
+    Ok(())
+}
+
 fn main() -> Result<()> {
     // Инициализация базы данных
     let db = Database::new()?;
     db.init()?;
-
+    interactive_data_entry(&db)?;
     // Репозитории
     let manager_repo = ManagerRepository::new(&db);
     let product_repo = ProductRepository::new(&db);
@@ -20,21 +129,21 @@ fn main() -> Result<()> {
 
     // Демонстрация работы с данными
     
-    // 1. Получение всех менеджеров
+    // Получение всех менеджеров
     println!("=== Все менеджеры ===");
     let managers = manager_repo.get_all()?;
     for manager in managers {
         println!("{} ({})", manager.name, manager.email);
     }
 
-    // 2. Получение всех товаров
+    // Получение всех товаров
     println!("\n=== Все товары ===");
     let products = product_repo.get_all()?;
     for product in products {
         println!("{} - {} руб. (остаток: {})", product.name, product.price, product.quantity);
     }
 
-    // 3. Получение всех заявок
+    // Получение всех заявок
     println!("\n=== Все заявки на списание ===");
     let requests = request_repo.get_all()?;
     for request in requests {
@@ -47,7 +156,7 @@ fn main() -> Result<()> {
                  request.id.unwrap(), request.reason, status);
     }
 
-    // 4. Получение детальной информации о заявке
+    // Получение информации о заявке
     println!("\n=== Детали заявки #1 ===");
     if let Some(details) = request_repo.get_request_with_details(1)? {
         println!("Заявка от {}: {}", details.manager.name, details.request.reason);
@@ -66,7 +175,7 @@ fn main() -> Result<()> {
         }
     }
 
-    // 5. Создание новой заявки
+    // Создание заявки
     println!("\n=== Создание новой заявки ===");
     let new_request = WriteOffRequest {
         id: None,
@@ -86,7 +195,7 @@ fn main() -> Result<()> {
     let new_item = WriteOffItem {
         id: None,
         request_id,
-        product_id: 2, // Мышь Logitech
+        product_id: 2, 
         quantity: 3,
         unit_price: 7999.99,
     };
@@ -94,7 +203,7 @@ fn main() -> Result<()> {
     item_repo.create(&new_item)?;
     println!("Добавлен товар в заявку");
 
-    // 6. Получение заявок конкретного менеджера
+    // Получение заявок менеджера
     println!("\n=== Заявки менеджера #2 ===");
     let manager_requests = request_repo.get_requests_by_manager(2)?;
     for req in manager_requests {
