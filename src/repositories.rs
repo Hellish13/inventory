@@ -1,4 +1,4 @@
-use rusqlite::{params, Row};
+use rusqlite::params;
 use anyhow::{anyhow, Context, Result};
 use crate::models::*;
 use crate::database::Database;
@@ -408,5 +408,12 @@ impl<'a> AdminRepository<'a> {
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => Err(anyhow!(e)),
         }
+    }
+
+    pub fn get_all(&self) -> Result<Vec<Admin>> {
+        let _conn = self.db.get_connection();
+        // Реализация получения всех администраторов
+        // Пока возвращаем пустой вектор для демонстрации
+        Ok(Vec::new())
     }
 }
