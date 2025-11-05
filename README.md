@@ -1,35 +1,25 @@
-# Система учёта инвентаря
+# Система управления списанием товаров
 
-База данных на **Rust + SQLite**.  
-Учёт сотрудников, инвентаря и истории возвратов.
+Система для управления процессом списания товаров согласно бизнес-процессу:
 
----
+1. Менеджер создает заявку на списание
+2. Администратор проверяет и утверждает заявку
+3. При утверждении фиксируются причина, дата, менеджер
+4. Обновляется статус товара
 
-## ER‑диаграмма
+## ER-диаграмма
 
-```plantuml
-@startuml
-entity "Сотрудник" as employee {
-  * employee_full_name : TEXT <<PK>>
-}
+![ER Diagram](docs/diagrams/er_diagram.md)
 
-entity "Инвентарь" as inventory {
-  * inventory_num : INTEGER <<PK>>
-  --
-  name : TEXT
-  status : TEXT
-  current_holder : TEXT <<FK>>
-}
+## Структура базы данных
 
-entity "Возврат" as return {
-  * inventory_num : INTEGER <<FK, PK>>
-  * return_date : TEXT <<PK>>
-  --
-  client_full_name : TEXT <<FK>>
-  condition : TEXT
-}
+- **manager** - менеджеры
+- **admin** - администраторы  
+- **product** - товары
+- **write_off_request** - заявки на списание
+- **write_off_item** - позиции списания
 
-employee ||--o{ inventory : "держит"
-employee ||--o{ return : "возвращает"
-inventory ||--o{ return : "возвращается"
-@enduml
+## Запуск проекта
+
+```bash
+cargo run
