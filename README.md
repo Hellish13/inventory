@@ -1,22 +1,62 @@
-```markdown
 # Система управления списанием товаров
 
-Rust-приложение для управления процессом списания товаров с полным набором CRUD операций.
+![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)
+![SQLite](https://img.shields.io/badge/SQLite-3.x-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-## 🚀 Возможности
+Профессиональная система для автоматизации процесса списания товаров на предприятиях розничной торговли и складах. Приложение предоставляет полный цикл управления списаниями - от создания заявки до утверждения и исполнения.
 
-- 📊 **Просмотр данных** - менеджеры, товары, заявки
-- ➕ **Добавление данных** - интерактивное создание записей
-- ✏️ **Изменение данных** - редактирование существующих записей
-- 🗑️ **Удаление данных** - безопасное удаление с проверкой связей
-- 📋 **Бизнес-процессы** - полный цикл списания товаров
+## 🏗️ Архитектура системы
 
-## 🏗️ Архитектура
+### Модель данных
 
-### База данных
+```mermaid
+erDiagram
+    MANAGER {
+        integer id PK
+        varchar name
+        varchar email
+        varchar phone
+        boolean is_active
+    }
 
-Система использует **SQLite** для хранения данных. ER-диаграмма базы данных:
+    ADMIN {
+        integer id PK
+        varchar name
+        varchar email
+        varchar phone
+    }
 
-![ER Diagram](docs/diagrams/er_diagram.md)
+    PRODUCT {
+        integer id PK
+        varchar name
+        text description
+        varchar category
+        decimal price
+        integer quantity
+        varchar sku
+    }
 
-### Структура проекта
+    WRITE_OFF_REQUEST {
+        integer id PK
+        integer manager_id FK
+        integer admin_id FK
+        date request_date
+        date approval_date
+        varchar status
+        text reason
+        text notes
+    }
+
+    WRITE_OFF_ITEM {
+        integer id PK
+        integer request_id FK
+        integer product_id FK
+        integer quantity
+        decimal unit_price
+    }
+
+    MANAGER ||--o{ WRITE_OFF_REQUEST : creates
+    ADMIN ||--o{ WRITE_OFF_REQUEST : approves
+    WRITE_OFF_REQUEST ||--o{ WRITE_OFF_ITEM : contains
+    PRODUCT ||--o{ WRITE_OFF_ITEM : included_in
