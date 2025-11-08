@@ -25,9 +25,10 @@ fn main_menu(db: &Database) -> Result<()> {
         println!("\n=== СИСТЕМА УПРАВЛЕНИЯ СПИСАНИЕМ ТОВАРОВ ===");
         println!("1. 📊 Просмотр данных");
         println!("2. ➕ Добавление данных");
-        println!("3. ✏️  Изменение данных");
+        println!("3. ✏️  Изменение данных"); 
         println!("4. 🗑️  Удаление данных");
-        println!("5. 🚪 Выход");
+        println!("5. 📤 Экспорт данных");
+        println!("6. 🚪 Выход");
         println!("===========================================");
 
         print!("Выберите действие: ");
@@ -41,7 +42,8 @@ fn main_menu(db: &Database) -> Result<()> {
             "2" => add_data_menu(db)?,
             "3" => update_data_menu(db)?,
             "4" => delete_data_menu(db)?,
-            "5" => {
+            "5" => export_data(db)?,  // Добавлен вызов экспорта
+            "6" => {
                 println!("До свидания!");
                 break;
             }
@@ -719,4 +721,177 @@ fn delete_item_interactive(db: &Database) -> Result<()> {
     println!("✅ Товар удален из заявки");
 
     Ok(())
+}
+fn export_data(db: &Database) -> Result<()> {
+    println!("\n=== 📤 ЭКСПОРТ ДАННЫХ ===");
+    
+    let exporter = DataExporter::new(db);
+    exporter.export_write_off_requests()?;
+    
+    Ok(())
+}
+
+// Структура для экспорта данных
+struct DataExporter<'a> {
+    db: &'a Database,
+}
+
+impl<'a> DataExporter<'a> {
+    fn new(db: &'a Database) -> Self {
+        DataExporter { db }
+    }
+    
+    fn export_write_off_requests(&self) -> Result<()> {
+        use std::fs;
+        use std::path::Path;
+        
+        // Создаем папку out, если её нет
+        let out_dir = Path::new("out");
+        if !out_dir.exists() {
+            fs::create_dir_all(out_dir)?;
+            println!("✅ Создана папка 'out'");
+        }
+        
+        // Получаем данные с связанными сущностями
+        let requests_with_details = self.get_requests_with_details()?;
+        println!("✅ Получено {} заявок для экспорта", requests_with_details.len());
+        
+        // Экспорт в JSON
+        self.export_to_json(&requests_with_details)?;
+        
+        // Экспорт в CSV
+        self.export_to_csv(&requests_with_details)?;
+        
+        // Экспорт в XML
+        self.export_to_xml(&requests_with_details)?;
+        
+        // Экспорт в YAML
+        self.export_to_yaml(&requests_with_details)?;
+        
+        println!("🎉 Все файлы успешно созданы в папке 'out/'");
+        println!("📁 Файлы: data.json, data.csv, data.xml, data.yaml");
+        
+        Ok(())
+    }
+    
+    fn get_requests_with_details(&self) -> Result<Vec<WriteOffRequestWithDetails>> {
+        let request_repo = WriteOffRequestRepository::new(self.db);
+        let mut result = Vec::new();
+        
+        // Получаем все заявки
+        let requests = request_repo.get_all()?;
+        
+        for request in requests {
+            if let Some(details) = request_repo.get_request_with_details(request.id.unwrap())? {
+                result.push(details);
+            }
+        }
+        
+        Ok(result)
+    }
+    
+    fn export_to_json(&self, data: &[WriteOffRequestWithDetails]) -> Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+        
+        let json_data = serde_json::to_string_pretty(data)?;
+        let mut file = File::create("out/data.json")?;
+        file.write_all(json_data.as_bytes())?;
+        
+        println!("✅ Данные экспортированы в data.json");
+        Ok(())
+    }
+    
+    fn export_to_csv(&self, data: &[WriteOffRequestWithDetails]) -> Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+        
+        let mut csv_data = String::new();
+        
+        // Заголовок CSV
+        csv_data.push_str("id,manager,admin,request_date,approval_date,status,reason,notes,items_count,total_amount\n");
+        
+        for details in data {
+            let items_count = details.items.len();
+            let total_amount: f64 = details.items.iter()
+                .map(|item| item.item.quantity as f64 * item.item.unit_price)
+                .sum();
+            
+            let admin_name = if let Some(admin) = &details.admin {
+                &admin.name
+            } else {
+                "Не назначен"
+            };
+            
+            let approval_date = if let Some(date) = &details.request.approval_date {
+                date.as_str()
+            } else {
+                "Не утверждена"
+            };
+            
+            let notes = if let Some(note) = &details.request.notes {
+                note.replace(',', ";") // Экранируем запятые для CSV
+            } else {
+                String::new()
+            };
+            
+            csv_data.push_str(&format!(
+                "{},{},{},{},{},{},{},{},{},{:.2}\n",
+                details.request.id.unwrap(),
+                details.manager.name.replace(',', ";"),
+                admin_name.replace(',', ";"),
+                details.request.request_date,
+                approval_date,
+                match details.request.status {
+                    RequestStatus::Pending => "ожидание",
+                    RequestStatus::Approved => "утверждено", 
+                    RequestStatus::Rejected => "отклонено",
+                },
+                details.request.reason.replace(',', ";"),
+                notes,
+                items_count,
+                total_amount
+            ));
+        }
+        
+        let mut file = File::create("out/data.csv")?;
+        file.write_all(csv_data.as_bytes())?;
+        
+        println!("✅ Данные экспортированы в data.csv");
+        Ok(())
+    }
+    
+    fn export_to_xml(&self, data: &[WriteOffRequestWithDetails]) -> Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+        use quick_xml::se::to_string;
+        
+        #[derive(serde::Serialize)]
+        struct ExportData<'a> {
+            #[serde(rename = "request")]
+            requests: &'a [WriteOffRequestWithDetails],
+        }
+        
+        let export_data = ExportData { requests: data };
+        let xml_data = to_string(&export_data)?;
+        
+        let mut file = File::create("out/data.xml")?;
+        file.write_all(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")?;
+        file.write_all(xml_data.as_bytes())?;
+        
+        println!("✅ Данные экспортированы в data.xml");
+        Ok(())
+    }
+    
+    fn export_to_yaml(&self, data: &[WriteOffRequestWithDetails]) -> Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+        
+        let yaml_data = serde_yaml::to_string(data)?;
+        let mut file = File::create("out/data.yaml")?;
+        file.write_all(yaml_data.as_bytes())?;
+        
+        println!("✅ Данные экспортированы в data.yaml");
+        Ok(())
+    }
 }
