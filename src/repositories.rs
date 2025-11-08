@@ -63,6 +63,32 @@ impl<'a> ManagerRepository<'a> {
             Err(e) => Err(anyhow!(e)),
         }
     }
+
+    // ДОБАВЛЕНО: Обновление менеджера
+    pub fn update(&self, manager: &Manager) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "UPDATE manager SET name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?",
+            params![
+                manager.name,
+                manager.email,
+                manager.phone,
+                manager.is_active,
+                manager.id.unwrap()
+            ],
+        )
+        .context("Failed to update manager")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление менеджера
+    pub fn delete(&self, id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute("DELETE FROM manager WHERE id = ?", params![id])
+            .context("Failed to delete manager")?;
+        Ok(())
+    }
 }
 
 pub struct ProductRepository<'a> {
@@ -145,6 +171,34 @@ impl<'a> ProductRepository<'a> {
         )
         .context("Failed to update product quantity")?;
         
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Полное обновление товара
+    pub fn update(&self, product: &Product) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "UPDATE product SET name = ?, description = ?, category = ?, price = ?, quantity = ?, sku = ? WHERE id = ?",
+            params![
+                product.name,
+                product.description,
+                product.category,
+                product.price,
+                product.quantity,
+                product.sku,
+                product.id.unwrap()
+            ],
+        )
+        .context("Failed to update product")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление товара
+    pub fn delete(&self, id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute("DELETE FROM product WHERE id = ?", params![id])
+            .context("Failed to delete product")?;
         Ok(())
     }
 }
@@ -230,13 +284,49 @@ impl<'a> WriteOffRequestRepository<'a> {
         }
     }
 
-    pub fn update_status(&self, id: i64, status: RequestStatus, admin_id: i64, approval_date: &str) -> Result<()> {
+    // ИСПРАВЛЕНО: Изменен тип параметра на String
+    pub fn update_status(&self, id: i64, status: RequestStatus, admin_id: i64, approval_date: String) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
             "UPDATE write_off_request SET status = ?, admin_id = ?, approval_date = ? WHERE id = ?",
             params![status.to_string(), admin_id, approval_date, id],
         )
         .context("Failed to update request status")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Полное обновление заявки
+    pub fn update(&self, request: &WriteOffRequest) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "UPDATE write_off_request SET manager_id = ?, admin_id = ?, request_date = ?, approval_date = ?, status = ?, reason = ?, notes = ? WHERE id = ?",
+            params![
+                request.manager_id,
+                request.admin_id,
+                request.request_date,
+                request.approval_date,
+                request.status.to_string(),
+                request.reason,
+                request.notes,
+                request.id.unwrap()
+            ],
+        )
+        .context("Failed to update write-off request")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление заявки (с удалением связанных позиций)
+    // ИСПРАВЛЕНО: Упрощенная версия без транзакции
+    pub fn delete(&self, id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        
+        // Сначала удаляем связанные позиции
+        conn.execute("DELETE FROM write_off_item WHERE request_id = ?", params![id])?;
+        
+        // Затем удаляем саму заявку
+        conn.execute("DELETE FROM write_off_request WHERE id = ?", params![id])?;
         
         Ok(())
     }
@@ -379,6 +469,43 @@ impl<'a> WriteOffItemRepository<'a> {
         
         Ok(items)
     }
+
+    // ДОБАВЛЕНО: Обновление позиции списания
+    pub fn update(&self, item: &WriteOffItem) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "UPDATE write_off_item SET request_id = ?, product_id = ?, quantity = ?, unit_price = ? WHERE id = ?",
+            params![
+                item.request_id,
+                item.product_id,
+                item.quantity,
+                item.unit_price,
+                item.id.unwrap()
+            ],
+        )
+        .context("Failed to update write-off item")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление позиции списания по ID
+    pub fn delete(&self, id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute("DELETE FROM write_off_item WHERE id = ?", params![id])
+            .context("Failed to delete write-off item")?;
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление позиции списания по заявке и товару
+    pub fn delete_by_request_and_product(&self, request_id: i64, product_id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "DELETE FROM write_off_item WHERE request_id = ? AND product_id = ?",
+            params![request_id, product_id],
+        )
+        .context("Failed to delete write-off item")?;
+        Ok(())
+    }
 }
 
 pub struct AdminRepository<'a> {
@@ -410,9 +537,60 @@ impl<'a> AdminRepository<'a> {
         }
     }
 
-    pub fn get_all(&self) -> Result<Vec<Admin>> {
-        let _conn = self.db.get_connection();
-        // Реализация получения всех администраторов
-        Ok(Vec::new())
+    // В функции get_all у AdminRepository (строка 360):
+pub fn get_all(&self) -> Result<Vec<Admin>> {
+    let conn = self.db.get_connection();
+    let mut stmt = conn.prepare("SELECT id, name, email, phone FROM admin")?;
+    
+    let admins = stmt.query_map([], |row| {
+        Ok(Admin {
+            id: Some(row.get(0)?),
+            name: row.get(1)?,
+            email: row.get(2)?,
+            phone: row.get(3)?,
+        })
+    })?
+    .collect::<std::result::Result<Vec<_>, _>>()?;
+    
+    Ok(admins)
+    }   
+
+    // ДОБАВЛЕНО: Создание администратора
+    pub fn create(&self, admin: &Admin) -> Result<i64> {
+        let conn = self.db.get_connection();
+        let sql = "INSERT INTO admin (name, email, phone) VALUES (?, ?, ?)";
+        
+        conn.execute(
+            sql,
+            params![admin.name, admin.email, admin.phone],
+        )
+        .context("Failed to create admin")?;
+        
+        Ok(conn.last_insert_rowid())
+    }
+
+    // ДОБАВЛЕНО: Обновление администратора
+    pub fn update(&self, admin: &Admin) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute(
+            "UPDATE admin SET name = ?, email = ?, phone = ? WHERE id = ?",
+            params![
+                admin.name,
+                admin.email,
+                admin.phone,
+                admin.id.unwrap()
+            ],
+        )
+        .context("Failed to update admin")?;
+        
+        Ok(())
+    }
+
+    // ДОБАВЛЕНО: Удаление администратора
+    pub fn delete(&self, id: i64) -> Result<()> {
+        let conn = self.db.get_connection();
+        conn.execute("DELETE FROM admin WHERE id = ?", params![id])
+            .context("Failed to delete admin")?;
+        Ok(())
     }
 }

@@ -1,48 +1,51 @@
+# ER-диаграмма системы управления списанием товаров
+
+```mermaid
 erDiagram
     MANAGER {
-        integer id PK
-        varchar name
-        varchar email
-        varchar phone
-        boolean is_active
+        integer id PK "Идентификатор менеджера"
+        varchar name "ФИО менеджера"
+        varchar email "Email (уникальный)"
+        varchar phone "Телефон"
+        boolean is_active "Статус активности"
     }
-    
+
     ADMIN {
-        integer id PK
-        varchar name
-        varchar email
-        varchar phone
+        integer id PK "Идентификатор администратора"
+        varchar name "ФИО администратора"
+        varchar email "Email (уникальный)"
+        varchar phone "Телефон"
     }
-    
+
     PRODUCT {
-        integer id PK
-        varchar name
-        text description
-        varchar category
-        decimal price
-        integer quantity
-        varchar sku
+        integer id PK "Идентификатор товара"
+        varchar name "Наименование товара"
+        text description "Описание товара"
+        varchar category "Категория"
+        decimal price "Цена"
+        integer quantity "Количество на складе"
+        varchar sku "Артикул (уникальный)"
     }
-    
+
     WRITE_OFF_REQUEST {
-        integer id PK
-        integer manager_id FK
-        integer admin_id FK
-        date request_date
-        date approval_date
-        varchar status
-        text reason
-        text notes
+        integer id PK "Идентификатор заявки"
+        integer manager_id FK "ID менеджера"
+        integer admin_id FK "ID администратора"
+        date request_date "Дата создания"
+        date approval_date "Дата утверждения"
+        varchar status "Статус заявки"
+        text reason "Причина списания"
+        text notes "Примечания"
     }
-    
+
     WRITE_OFF_ITEM {
-        integer id PK
-        integer request_id FK
-        integer product_id FK
-        integer quantity
-        decimal unit_price
+        integer id PK "Идентификатор позиции"
+        integer request_id FK "ID заявки"
+        integer product_id FK "ID товара"
+        integer quantity "Количество для списания"
+        decimal unit_price "Цена за единицу"
     }
-    
+
     MANAGER ||--o{ WRITE_OFF_REQUEST : creates
     ADMIN ||--o{ WRITE_OFF_REQUEST : approves
     WRITE_OFF_REQUEST ||--o{ WRITE_OFF_ITEM : contains
