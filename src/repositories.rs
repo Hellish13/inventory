@@ -64,7 +64,7 @@ impl<'a> ManagerRepository<'a> {
         }
     }
 
-    // ДОБАВЛЕНО: Обновление менеджера
+    // Обновление менеджера
     pub fn update(&self, manager: &Manager) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -82,7 +82,7 @@ impl<'a> ManagerRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление менеджера
+    // Удаление менеджера
     pub fn delete(&self, id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute("DELETE FROM manager WHERE id = ?", params![id])
@@ -174,7 +174,7 @@ impl<'a> ProductRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Полное обновление товара
+    // Полное обновление товара
     pub fn update(&self, product: &Product) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -194,7 +194,7 @@ impl<'a> ProductRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление товара
+    // Удаление товара
     pub fn delete(&self, id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute("DELETE FROM product WHERE id = ?", params![id])
@@ -284,7 +284,6 @@ impl<'a> WriteOffRequestRepository<'a> {
         }
     }
 
-    // ИСПРАВЛЕНО: Изменен тип параметра на String
     pub fn update_status(&self, id: i64, status: RequestStatus, admin_id: i64, approval_date: String) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -296,7 +295,7 @@ impl<'a> WriteOffRequestRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Полное обновление заявки
+    // Полное обновление заявки
     pub fn update(&self, request: &WriteOffRequest) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -317,15 +316,12 @@ impl<'a> WriteOffRequestRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление заявки (с удалением связанных позиций)
-    // ИСПРАВЛЕНО: Упрощенная версия без транзакции
+    // Удаление заявки (с удалением связанных позиций)
     pub fn delete(&self, id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         
-        // Сначала удаляем связанные позиции
         conn.execute("DELETE FROM write_off_item WHERE request_id = ?", params![id])?;
         
-        // Затем удаляем саму заявку
         conn.execute("DELETE FROM write_off_request WHERE id = ?", params![id])?;
         
         Ok(())
@@ -470,7 +466,7 @@ impl<'a> WriteOffItemRepository<'a> {
         Ok(items)
     }
 
-    // ДОБАВЛЕНО: Обновление позиции списания
+    // Обновление позиции списания
     pub fn update(&self, item: &WriteOffItem) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -488,7 +484,7 @@ impl<'a> WriteOffItemRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление позиции списания по ID
+    // Удаление позиции списания по ID
     pub fn delete(&self, id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute("DELETE FROM write_off_item WHERE id = ?", params![id])
@@ -496,7 +492,7 @@ impl<'a> WriteOffItemRepository<'a> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление позиции списания по заявке и товару
+    // Удаление позиции списания по заявке и товару
     pub fn delete_by_request_and_product(&self, request_id: i64, product_id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -537,7 +533,6 @@ impl<'a> AdminRepository<'a> {
         }
     }
 
-    // В функции get_all у AdminRepository (строка 360):
 pub fn get_all(&self) -> Result<Vec<Admin>> {
     let conn = self.db.get_connection();
     let mut stmt = conn.prepare("SELECT id, name, email, phone FROM admin")?;
@@ -555,7 +550,7 @@ pub fn get_all(&self) -> Result<Vec<Admin>> {
     Ok(admins)
     }   
 
-    // ДОБАВЛЕНО: Создание администратора
+    // Создание администратора
     pub fn create(&self, admin: &Admin) -> Result<i64> {
         let conn = self.db.get_connection();
         let sql = "INSERT INTO admin (name, email, phone) VALUES (?, ?, ?)";
@@ -569,7 +564,7 @@ pub fn get_all(&self) -> Result<Vec<Admin>> {
         Ok(conn.last_insert_rowid())
     }
 
-    // ДОБАВЛЕНО: Обновление администратора
+    // Обновление администратора
     pub fn update(&self, admin: &Admin) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute(
@@ -586,7 +581,7 @@ pub fn get_all(&self) -> Result<Vec<Admin>> {
         Ok(())
     }
 
-    // ДОБАВЛЕНО: Удаление администратора
+    // Удаление администратора
     pub fn delete(&self, id: i64) -> Result<()> {
         let conn = self.db.get_connection();
         conn.execute("DELETE FROM admin WHERE id = ?", params![id])

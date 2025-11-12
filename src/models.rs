@@ -97,7 +97,6 @@ impl From<Value> for RequestStatus {
     }
 }
 
-// DTO для связанных данных
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WriteOffRequestWithDetails {
     pub request: WriteOffRequest,

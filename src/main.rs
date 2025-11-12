@@ -9,26 +9,23 @@ use crate::database::Database;
 use crate::repositories::*;
 
 fn main() -> Result<()> {
-    // Инициализация базы данных
     let db = Database::new()?;
     db.init()?;
 
-    // Главное меню
     main_menu(&db)?;
 
     Ok(())
 }
 
-// ГЛАВНОЕ МЕНЮ
 fn main_menu(db: &Database) -> Result<()> {
     loop {
         println!("\n=== СИСТЕМА УПРАВЛЕНИЯ СПИСАНИЕМ ТОВАРОВ ===");
-        println!("1. 📊 Просмотр данных");
-        println!("2. ➕ Добавление данных");
-        println!("3. ✏️  Изменение данных"); 
-        println!("4. 🗑️  Удаление данных");
-        println!("5. 📤 Экспорт данных");
-        println!("6. 🚪 Выход");
+        println!("1.  Просмотр данных");
+        println!("2.  Добавление данных");
+        println!("3.   Изменение данных"); 
+        println!("4.   Удаление данных");
+        println!("5.  Экспорт данных");
+        println!("6.  Выход");
         println!("===========================================");
 
         print!("Выберите действие: ");
@@ -42,12 +39,12 @@ fn main_menu(db: &Database) -> Result<()> {
             "2" => add_data_menu(db)?,
             "3" => update_data_menu(db)?,
             "4" => delete_data_menu(db)?,
-            "5" => export_data(db)?,  // Добавлен вызов экспорта
+            "5" => export_data(db)?,  
             "6" => {
                 println!("До свидания!");
                 break;
             }
-            _ => println!("❌ Неверный выбор!"),
+            _ => println!("Неверный выбор!"),
         }
     }
 
@@ -57,7 +54,7 @@ fn main_menu(db: &Database) -> Result<()> {
 // МЕНЮ ПРОСМОТРА ДАННЫХ
 fn view_data_menu(db: &Database) -> Result<()> {
     loop {
-        println!("\n--- 📊 ПРОСМОТР ДАННЫХ ---");
+        println!("\n---  ПРОСМОТР ДАННЫХ ---");
         println!("1. Показать всех менеджеров");
         println!("2. Показать все товары");
         println!("3. Показать все заявки");
@@ -77,7 +74,7 @@ fn view_data_menu(db: &Database) -> Result<()> {
             "3" => show_all_requests(db)?,
             "4" => show_request_details(db)?,
             "5" => break,
-            _ => println!("❌ Неверный выбор!"),
+            _ => println!("Неверный выбор!"),
         }
     }
     Ok(())
@@ -106,7 +103,7 @@ fn add_data_menu(db: &Database) -> Result<()> {
             "3" => create_write_off_request_interactive(db)?,
             "4" => add_item_to_request_interactive(db)?,
             "5" => break,
-            _ => println!("❌ Неверный выбор!"),
+            _ => println!("Неверный выбор!"),
         }
     }
     Ok(())
@@ -115,7 +112,7 @@ fn add_data_menu(db: &Database) -> Result<()> {
 // МЕНЮ ИЗМЕНЕНИЯ ДАННЫХ
 fn update_data_menu(db: &Database) -> Result<()> {
     loop {
-        println!("\n--- ✏️  ИЗМЕНЕНИЕ ДАННЫХ ---");
+        println!("\n---   ИЗМЕНЕНИЕ ДАННЫХ ---");
         println!("1. Изменить данные менеджера");
         println!("2. Изменить данные товара");
         println!("3. Изменить статус заявки");
@@ -135,7 +132,7 @@ fn update_data_menu(db: &Database) -> Result<()> {
             "3" => update_request_status_interactive(db)?,
             "4" => update_product_quantity_interactive(db)?,
             "5" => break,
-            _ => println!("❌ Неверный выбор!"),
+            _ => println!("Неверный выбор!"),
         }
     }
     Ok(())
@@ -144,7 +141,7 @@ fn update_data_menu(db: &Database) -> Result<()> {
 // МЕНЮ УДАЛЕНИЯ ДАННЫХ
 fn delete_data_menu(db: &Database) -> Result<()> {
     loop {
-        println!("\n--- 🗑️  УДАЛЕНИЕ ДАННЫХ ---");
+        println!("\n---   УДАЛЕНИЕ ДАННЫХ ---");
         println!("1. Удалить менеджера");
         println!("2. Удалить товар");
         println!("3. Удалить заявку");
@@ -164,25 +161,25 @@ fn delete_data_menu(db: &Database) -> Result<()> {
             "3" => delete_request_interactive(db)?,
             "4" => delete_item_interactive(db)?,
             "5" => break,
-            _ => println!("❌ Неверный выбор!"),
+            _ => println!("Неверный выбор!"),
         }
     }
     Ok(())
 }
 
-// ФУНКЦИИ ПРОСМОТРА ДАННЫХ
+// ПРОСМОТР ДАННЫХ
 fn show_all_managers(db: &Database) -> Result<()> {
     let manager_repo = ManagerRepository::new(db);
     let managers = manager_repo.get_all()?;
 
-    println!("\n--- 👥 СПИСОК МЕНЕДЖЕРОВ ---");
+    println!("\n---  СПИСОК МЕНЕДЖЕРОВ ---");
     for manager in managers {
         println!("ID: {} | {} | {} | {} | {}", 
             manager.id.unwrap(),
             manager.name,
             manager.email,
             manager.phone.unwrap_or("нет телефона".to_string()),
-            if manager.is_active { "✅ активен" } else { "❌ неактивен" }
+            if manager.is_active { "активен" } else { "неактивен" }
         );
     }
     Ok(())
@@ -192,7 +189,7 @@ fn show_all_products(db: &Database) -> Result<()> {
     let product_repo = ProductRepository::new(db);
     let products = product_repo.get_all()?;
 
-    println!("\n--- 🛒 СПИСОК ТОВАРОВ ---");
+    println!("\n---  СПИСОК ТОВАРОВ ---");
     for product in products {
         println!("ID: {} | {} | {} руб. | {} шт. | {}",
             product.id.unwrap(),
@@ -209,12 +206,12 @@ fn show_all_requests(db: &Database) -> Result<()> {
     let request_repo = WriteOffRequestRepository::new(db);
     let requests = request_repo.get_all()?;
 
-    println!("\n--- 📋 СПИСОК ЗАЯВОК ---");
+    println!("\n---  СПИСОК ЗАЯВОК ---");
     for request in requests {
         let status = match request.status {
-            RequestStatus::Pending => "⏳ ожидание",
-            RequestStatus::Approved => "✅ утверждено",
-            RequestStatus::Rejected => "❌ отклонено",
+            RequestStatus::Pending => "ожидание",
+            RequestStatus::Approved => "утверждено",
+            RequestStatus::Rejected => "отклонено",
         };
         println!("ID: {} | Менеджер: {} | {} | {}",
             request.id.unwrap(),
@@ -236,14 +233,14 @@ fn show_request_details(db: &Database) -> Result<()> {
 
     let request_repo = WriteOffRequestRepository::new(db);
     if let Some(details) = request_repo.get_request_with_details(request_id)? {
-        println!("\n--- 📄 ДЕТАЛИ ЗАЯВКИ #{} ---", request_id);
+        println!("\n---  ДЕТАЛИ ЗАЯВКИ #{} ---", request_id);
         println!("Менеджер: {}", details.manager.name);
         println!("Причина: {}", details.request.reason);
         println!("Дата создания: {}", details.request.request_date);
         println!("Статус: {}", match details.request.status {
-            RequestStatus::Pending => "⏳ ожидание",
-            RequestStatus::Approved => "✅ утверждено",
-            RequestStatus::Rejected => "❌ отклонено",
+            RequestStatus::Pending => "ожидание",
+            RequestStatus::Approved => "утверждено",
+            RequestStatus::Rejected => "отклонено",
         });
 
         if let Some(admin) = details.admin {
@@ -261,14 +258,13 @@ fn show_request_details(db: &Database) -> Result<()> {
             );
         }
     } else {
-        println!("❌ Заявка с ID {} не найдена", request_id);
+        println!("Заявка с ID {} не найдена", request_id);
     }
     Ok(())
 }
 
-// ФУНКЦИИ ДОБАВЛЕНИЯ ДАННЫХ
 fn add_manager_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ➕ ДОБАВЛЕНИЕ МЕНЕДЖЕРА ---");
+    println!("\n---  ДОБАВЛЕНИЕ МЕНЕДЖЕРА ---");
 
     print!("ФИО менеджера: ");
     io::stdout().flush()?;
@@ -295,13 +291,13 @@ fn add_manager_interactive(db: &Database) -> Result<()> {
 
     let manager_repo = ManagerRepository::new(db);
     let manager_id = manager_repo.create(&manager)?;
-    println!("✅ Менеджер добавлен с ID: {}", manager_id);
+    println!("Менеджер добавлен с ID: {}", manager_id);
 
     Ok(())
 }
 
 fn add_product_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ➕ ДОБАВЛЕНИЕ ТОВАРА ---");
+    println!("\n---  ДОБАВЛЕНИЕ ТОВАРА ---");
 
     print!("Название товара: ");
     io::stdout().flush()?;
@@ -347,13 +343,13 @@ fn add_product_interactive(db: &Database) -> Result<()> {
 
     let product_repo = ProductRepository::new(db);
     let product_id = product_repo.create(&product)?;
-    println!("✅ Товар добавлен с ID: {}", product_id);
+    println!("Товар добавлен с ID: {}", product_id);
 
     Ok(())
 }
 
 fn create_write_off_request_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ➕ СОЗДАНИЕ ЗАЯВКИ ---");
+    println!("\n---  СОЗДАНИЕ ЗАЯВКИ ---");
 
     show_all_managers(db)?;
     print!("ID менеджера: ");
@@ -385,13 +381,13 @@ fn create_write_off_request_interactive(db: &Database) -> Result<()> {
 
     let request_repo = WriteOffRequestRepository::new(db);
     let request_id = request_repo.create(&request)?;
-    println!("✅ Заявка создана с ID: {}", request_id);
+    println!("Заявка создана с ID: {}", request_id);
 
     Ok(())
 }
 
 fn add_item_to_request_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ➕ ДОБАВЛЕНИЕ ТОВАРА В ЗАЯВКУ ---");
+    println!("\n---  ДОБАВЛЕНИЕ ТОВАРА В ЗАЯВКУ ---");
 
     show_all_requests(db)?;
     print!("ID заявки: ");
@@ -427,14 +423,14 @@ fn add_item_to_request_interactive(db: &Database) -> Result<()> {
 
     let item_repo = WriteOffItemRepository::new(db);
     let item_id = item_repo.create(&item)?;
-    println!("✅ Товар добавлен в заявку с ID позиции: {}", item_id);
+    println!("Товар добавлен в заявку с ID позиции: {}", item_id);
 
     Ok(())
 }
 
-// ФУНКЦИИ ИЗМЕНЕНИЯ ДАННЫХ
+// ИЗМЕНЕНИЕ ДАННЫХ
 fn update_manager_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ✏️  ИЗМЕНЕНИЕ МЕНЕДЖЕРА ---");
+    println!("\n---   ИЗМЕНЕНИЕ МЕНЕДЖЕРА ---");
 
     show_all_managers(db)?;
     print!("ID менеджера для изменения: ");
@@ -447,7 +443,6 @@ fn update_manager_interactive(db: &Database) -> Result<()> {
     let mut manager = manager_repo.get_by_id(manager_id)?
         .ok_or_else(|| anyhow::anyhow!("Менеджер не найден"))?;
 
-    // ИСПРАВЛЕНО: Проблема с manager.phone
     let phone_display = manager.phone.as_ref().map(|p| p.as_str()).unwrap_or("нет телефона");
     println!("Текущие данные: {} | {} | {}", 
         manager.name, manager.email, phone_display);
@@ -476,16 +471,15 @@ fn update_manager_interactive(db: &Database) -> Result<()> {
         manager.phone = Some(phone.trim().to_string());
     }
 
-    // ИСПРАВЛЕНО: Используем репозиторий вместо прямого SQL
     manager_repo.update(&manager)?;
 
-    println!("✅ Данные менеджера обновлены");
+    println!("Данные менеджера обновлены");
 
     Ok(())
 }
 
 fn update_product_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ✏️  ИЗМЕНЕНИЕ ТОВАРА ---");
+    println!("\n---   ИЗМЕНЕНИЕ ТОВАРА ---");
 
     show_all_products(db)?;
     print!("ID товара для изменения: ");
@@ -525,10 +519,9 @@ fn update_product_interactive(db: &Database) -> Result<()> {
         product.quantity = quantity_str.trim().parse()?;
     }
 
-    // Сохраняем изменения
     product_repo.update(&product)?;
 
-    println!("✅ Данные товара обновлены");
+    println!("Данные товара обновлены");
 
     Ok(())
 }
@@ -544,9 +537,9 @@ fn update_request_status_interactive(db: &Database) -> Result<()> {
     let request_id: i64 = request_id_str.trim().parse()?;
 
     println!("Выберите новый статус:");
-    println!("1. ⏳ Ожидание");
-    println!("2. ✅ Утверждено");
-    println!("3. ❌ Отклонено");
+    println!("1. Ожидание");
+    println!("2. Утверждено");
+    println!("3. Отклонено");
     print!("Ваш выбор: ");
     io::stdout().flush()?;
 
@@ -558,7 +551,7 @@ fn update_request_status_interactive(db: &Database) -> Result<()> {
         "2" => RequestStatus::Approved,
         "3" => RequestStatus::Rejected,
         _ => {
-            println!("❌ Неверный выбор статуса");
+            println!(" Неверный выбор статуса");
             return Ok(());
         }
     };
@@ -567,17 +560,17 @@ fn update_request_status_interactive(db: &Database) -> Result<()> {
     request_repo.update_status(
         request_id,
         status,
-        1, // admin_id (в реальной системе нужно выбирать администратора)
+        1, 
         chrono::Local::now().format("%Y-%m-%d").to_string(),
     )?;
 
-    println!("✅ Статус заявки обновлен");
+    println!("Статус заявки обновлен");
 
     Ok(())
 }
 
 fn update_product_quantity_interactive(db: &Database) -> Result<()> {
-    println!("\n--- ✏️  ОБНОВЛЕНИЕ КОЛИЧЕСТВА ТОВАРА ---");
+    println!("\n---   ОБНОВЛЕНИЕ КОЛИЧЕСТВА ТОВАРА ---");
 
     show_all_products(db)?;
     print!("ID товара: ");
@@ -595,14 +588,14 @@ fn update_product_quantity_interactive(db: &Database) -> Result<()> {
     let product_repo = ProductRepository::new(db);
     product_repo.update_quantity(product_id, quantity)?;
 
-    println!("✅ Количество товара обновлено");
+    println!("Количество товара обновлено");
 
     Ok(())
 }
 
-// ФУНКЦИИ УДАЛЕНИЯ ДАННЫХ
+// УДАЛЕНИ ДАННЫХ
 fn delete_manager_interactive(db: &Database) -> Result<()> {
-    println!("\n--- 🗑️  УДАЛЕНИЕ МЕНЕДЖЕРА ---");
+    println!("\n---   УДАЛЕНИЕ МЕНЕДЖЕРА ---");
 
     show_all_managers(db)?;
     print!("ID менеджера для удаления: ");
@@ -611,12 +604,11 @@ fn delete_manager_interactive(db: &Database) -> Result<()> {
     io::stdin().read_line(&mut manager_id_str)?;
     let manager_id: i64 = manager_id_str.trim().parse()?;
 
-    // Проверяем, есть ли у менеджера заявки
     let request_repo = WriteOffRequestRepository::new(db);
     let manager_requests = request_repo.get_requests_by_manager(manager_id)?;
     
     if !manager_requests.is_empty() {
-        println!("❌ Нельзя удалить менеджера, у которого есть заявки!");
+        println!("Нельзя удалить менеджера, у которого есть заявки!");
         println!("Сначала удалите или переназначьте {} заявок", manager_requests.len());
         return Ok(());
     }
@@ -624,14 +616,14 @@ fn delete_manager_interactive(db: &Database) -> Result<()> {
     let manager_repo = ManagerRepository::new(db);
     manager_repo.delete(manager_id)?;
 
-    println!("✅ Менеджер удален");
+    println!("Менеджер удален");
 
     Ok(())
 }
 
-// ДОБАВЛЕНО: Функция удаления товара
+// Функция удаления товара
 fn delete_product_interactive(db: &Database) -> Result<()> {
-    println!("\n--- 🗑️  УДАЛЕНИЕ ТОВАРА ---");
+    println!("\n---   УДАЛЕНИЕ ТОВАРА ---");
 
     show_all_products(db)?;
     print!("ID товара для удаления: ");
@@ -642,7 +634,6 @@ fn delete_product_interactive(db: &Database) -> Result<()> {
 
     let product_repo = ProductRepository::new(db);
     
-    // Проверяем, используется ли товар в заявках
     let item_repo = WriteOffItemRepository::new(db);
     let conn = db.get_connection();
     
@@ -653,19 +644,19 @@ fn delete_product_interactive(db: &Database) -> Result<()> {
     )?;
 
     if item_count > 0 {
-        println!("❌ Нельзя удалить товар, который используется в заявках!");
+        println!("Нельзя удалить товар, который используется в заявках!");
         println!("Сначала удалите товар из {} заявок", item_count);
         return Ok(());
     }
 
     product_repo.delete(product_id)?;
-    println!("✅ Товар удален");
+    println!("Товар удален");
 
     Ok(())
 }
 
 fn delete_request_interactive(db: &Database) -> Result<()> {
-    println!("\n--- 🗑️  УДАЛЕНИЕ ЗАЯВКИ ---");
+    println!("\n---   УДАЛЕНИЕ ЗАЯВКИ ---");
 
     show_all_requests(db)?;
     print!("ID заявки для удаления: ");
@@ -674,17 +665,16 @@ fn delete_request_interactive(db: &Database) -> Result<()> {
     io::stdin().read_line(&mut request_id_str)?;
     let request_id: i64 = request_id_str.trim().parse()?;
 
-    // ИСПРАВЛЕНО: Добавлено создание репозитория
     let request_repo = WriteOffRequestRepository::new(db);
     request_repo.delete(request_id)?;
 
-    println!("✅ Заявка и связанные позиции удалены");
+    println!("Заявка и связанные позиции удалены");
 
     Ok(())
 }
 
 fn delete_item_interactive(db: &Database) -> Result<()> {
-    println!("\n--- 🗑️  УДАЛЕНИЕ ТОВАРА ИЗ ЗАЯВКИ ---");
+    println!("\n---   УДАЛЕНИЕ ТОВАРА ИЗ ЗАЯВКИ ---");
 
     print!("ID заявки: ");
     io::stdout().flush()?;
@@ -692,12 +682,12 @@ fn delete_item_interactive(db: &Database) -> Result<()> {
     io::stdin().read_line(&mut request_id_str)?;
     let request_id: i64 = request_id_str.trim().parse()?;
 
-    // Показываем товары в заявке
+    // товары в заявке
     let item_repo = WriteOffItemRepository::new(db);
     let items = item_repo.get_items_with_products(request_id)?;
     
     if items.is_empty() {
-        println!("❌ В заявке нет товаров");
+        println!("В заявке нет товаров");
         return Ok(());
     }
 
@@ -718,7 +708,7 @@ fn delete_item_interactive(db: &Database) -> Result<()> {
 
     item_repo.delete(item_id)?;
 
-    println!("✅ Товар удален из заявки");
+    println!("Товар удален из заявки");
 
     Ok(())
 }
@@ -731,7 +721,7 @@ fn export_data(db: &Database) -> Result<()> {
     Ok(())
 }
 
-// Структура для экспорта данных
+// экспорт данных
 struct DataExporter<'a> {
     db: &'a Database,
 }
@@ -744,32 +734,26 @@ impl<'a> DataExporter<'a> {
     fn export_write_off_requests(&self) -> Result<()> {
         use std::fs;
         use std::path::Path;
-        
-        // Создаем папку out, если её нет
+
         let out_dir = Path::new("out");
         if !out_dir.exists() {
             fs::create_dir_all(out_dir)?;
-            println!("✅ Создана папка 'out'");
+            println!(" Создана папка 'out'");
         }
         
-        // Получаем данные с связанными сущностями
         let requests_with_details = self.get_requests_with_details()?;
-        println!("✅ Получено {} заявок для экспорта", requests_with_details.len());
+        println!("Получено {} заявок для экспорта", requests_with_details.len());
         
-        // Экспорт в JSON
         self.export_to_json(&requests_with_details)?;
         
-        // Экспорт в CSV
         self.export_to_csv(&requests_with_details)?;
         
-        // Экспорт в XML
         self.export_to_xml(&requests_with_details)?;
         
-        // Экспорт в YAML
         self.export_to_yaml(&requests_with_details)?;
         
-        println!("🎉 Все файлы успешно созданы в папке 'out/'");
-        println!("📁 Файлы: data.json, data.csv, data.xml, data.yaml");
+        println!("Все файлы успешно созданы в папке 'out/'");
+        println!("Файлы: data.json, data.csv, data.xml, data.yaml");
         
         Ok(())
     }
@@ -798,7 +782,7 @@ impl<'a> DataExporter<'a> {
         let mut file = File::create("out/data.json")?;
         file.write_all(json_data.as_bytes())?;
         
-        println!("✅ Данные экспортированы в data.json");
+        println!("Данные экспортированы в data.json");
         Ok(())
     }
     
@@ -808,7 +792,6 @@ impl<'a> DataExporter<'a> {
         
         let mut csv_data = String::new();
         
-        // Заголовок CSV
         csv_data.push_str("id,manager,admin,request_date,approval_date,status,reason,notes,items_count,total_amount\n");
         
         for details in data {
@@ -830,7 +813,7 @@ impl<'a> DataExporter<'a> {
             };
             
             let notes = if let Some(note) = &details.request.notes {
-                note.replace(',', ";") // Экранируем запятые для CSV
+                note.replace(',', ";")
             } else {
                 String::new()
             };
@@ -857,7 +840,7 @@ impl<'a> DataExporter<'a> {
         let mut file = File::create("out/data.csv")?;
         file.write_all(csv_data.as_bytes())?;
         
-        println!("✅ Данные экспортированы в data.csv");
+        println!("Данные экспортированы в data.csv");
         Ok(())
     }
     
@@ -879,7 +862,7 @@ impl<'a> DataExporter<'a> {
         file.write_all(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")?;
         file.write_all(xml_data.as_bytes())?;
         
-        println!("✅ Данные экспортированы в data.xml");
+        println!("Данные экспортированы в data.xml");
         Ok(())
     }
     
@@ -891,7 +874,7 @@ impl<'a> DataExporter<'a> {
         let mut file = File::create("out/data.yaml")?;
         file.write_all(yaml_data.as_bytes())?;
         
-        println!("✅ Данные экспортированы в data.yaml");
+        println!("Данные экспортированы в data.yaml");
         Ok(())
     }
 }
